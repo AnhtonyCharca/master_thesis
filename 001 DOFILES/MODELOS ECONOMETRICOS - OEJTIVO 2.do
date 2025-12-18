@@ -33,42 +33,24 @@ cd "$tabyfig"
 
 use "$dclea/pobreza_panel_18-22_full.dta", clear
 
-rename pobre2_ pob_monetaria   // si aún no lo hiciste
-label define lbl_pobmon 0 "No pobre" 1 "Pobre", replace
-label values pob_monetaria lbl_pobmon
+*-----------------------------------------------------------*
+* 0. CARGA DE BASE Y CONFIGURACIÓN GENERAL
+*-----------------------------------------------------------*
 
-gen nativo_=(race_==3)
-gen vive_altura_ = (zone_==2)
-gen es_soltero_=(ecivil_==1)
-gen es_pea_=(ocu500_==1)
-	recode sec_ocu_ (. = 12)
-	recode limitacion_ (. = 1)
-
-	gen trab_informa=( ocupinf_ ==1)
-	gen sec_agricola=(sec_ocu_==1)
-gen es_casado=(ecivil_ ==2)	
-gen log_inghog2d_=log(inghog2d_)
-
-
-* Variable dependiente (si fuera necesario renombrar)
-capture confirm variable pob_monetaria
-if _rc {
-    capture rename pobre2_ pob_monetaria
-}
-
-* Identificar variable de departamento (dpto_ o depto)
-capture confirm variable dpto_
-if _rc==0 {
-    global DEPVAR dpto_
-}
-else {
-    capture confirm variable depto
-    if _rc==0 global DEPVAR depto
-}
+use "$dclea/pobreza_panel_18-22_full.dta", clear
 
 **# PERÚ: MODELOS – PANEL 2020–2022 #
 xtset idhogar year
 gen Lpobre = L.pob_monetaria
+
+***1. Modelos (coeficientes)
+
+*--------------------------------------------------------------*
+*   MODELOS – PANEL 2020–2022
+*--------------------------------------------------------------*
+global X_static log_inghog2d_ totmieho_ internet_ es_casado es_pea_ trab_informa
+
+sum pob_monetaria pobre_multi i.pobre_integrada log_inghog2d_ totmieho_ internet_ es_casado es_pea_ trab_informa
 
 ***1. Modelos (coeficientes)
 
@@ -662,5 +644,6 @@ estimates store M_DYN_PUNO_A1822
 
 outreg2 [M_DYN_PUNO_A1822] using "margins_PUNO_A1822.doc", append dec(6) ///
     ctitle("AME Dinámico A1822")
+
 
 ********END***************
